@@ -1,0 +1,7 @@
+.vscode
+cookies.txt
+**/bin
+**/obj
+**/input.txt
+**/Input.8xv
+**/SampleInput.8xv
