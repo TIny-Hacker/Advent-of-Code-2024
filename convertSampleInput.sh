@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ ! -f "input" ]] # Ensure the file was downloaded
+if [[ ! -f "input.txt" ]] # Ensure the file was downloaded
 then
     echo "No input file found."
     exit 1
@@ -8,9 +8,9 @@ fi
 
 echo "Converting newlines to null..."
 
-tr '\n' '\0' < input > input.txt # Zero terminate newlines
+tr '\n' '\0' < input.txt > input # Zero terminate newlines
 
-rm input
+mv input input.txt
 
 echo "Converting output to 8xv..."
 
