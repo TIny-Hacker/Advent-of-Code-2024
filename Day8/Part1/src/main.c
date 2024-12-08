@@ -1,0 +1,71 @@
+#include <fileioc.h>
+#include <stdint.h>
+#include <graphx.h>
+#include <keypadc.h>
+#include <string.h>
+
+#define os_PixelShadow          ((uint8_t *)0xD031F6)
+
+struct antenna_t {
+    uint8_t type;
+    uint8_t x;
+    uint8_t y;
+};
+
+bool placeAntinode(struct antenna_t antenna1, struct antenna_t antenna2, uint8_t xMax, uint8_t yMax) {
+    int x = (int)(antenna2.x + (antenna2.x - antenna1.x));
+    int y = (int)(antenna2.y + (antenna2.y - antenna1.y));
+
+    if (x >= 0 && x < xMax && y >= 0 && y < yMax && '#' != gfx_GetPixel(x, y)) {
+        gfx_SetPixel(x, y);
+        return true;
+    }
+
+    return false;
+}
+
+int main(void) {
+    gfx_Begin();
+
+    uint8_t slot = ti_Open("Input", "r");
+    char *tok = ti_GetDataPtr(slot);
+    char *endOfFile = tok + ti_GetSize(slot);
+    ti_Close(slot);
+
+    unsigned int total = 0;
+    uint8_t columns = strlen(tok);
+    uint8_t rows = 0;
+
+    struct antenna_t *antennae = (struct antenna_t *)os_PixelShadow;
+    unsigned int count = 0;
+
+    for (; tok < endOfFile; rows++, tok++) {
+        for (uint8_t x = 0; x < columns; x++, tok++) {
+            gfx_SetColor(*tok);
+
+            if (*tok != '.') {
+                antennae[count].type = *tok;
+                antennae[count].x = x;
+                antennae[count].y = rows;
+                count++;
+            }
+
+            gfx_SetPixel(x, rows); // Visualization 2 electric boogaloo
+        }
+    }
+
+    gfx_SetColor('#');
+
+    for (uint8_t i = 0; i < count - 1; i++) {
+        for (uint8_t j = i + 1; j < count; j++) {
+            if (antennae[i].type == antennae[j].type) {
+                total += placeAntinode(antennae[i], antennae[j], rows, columns);
+                total += placeAntinode(antennae[j], antennae[i], rows, columns);
+            }
+        }
+    }
+
+    gfx_PrintUInt(total, 1);
+    while (!kb_AnyKey());
+    gfx_End();
+}
