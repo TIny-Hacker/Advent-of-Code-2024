@@ -36,7 +36,7 @@ int main(void) {
     uint8_t columns = strlen(tok);
     uint8_t rows = 0;
 
-    struct antenna_t *antennae = (struct antenna_t *)os_PixelShadow;
+    struct antenna_t *antennas = (struct antenna_t *)os_PixelShadow;
     unsigned int count = 0;
 
     for (; tok < endOfFile; rows++, tok++) {
@@ -44,9 +44,9 @@ int main(void) {
             gfx_SetColor(*tok);
 
             if (*tok != '.') {
-                antennae[count].type = *tok;
-                antennae[count].x = x;
-                antennae[count].y = rows;
+                antennas[count].type = *tok;
+                antennas[count].x = x;
+                antennas[count].y = rows;
                 count++;
             }
 
@@ -58,9 +58,9 @@ int main(void) {
 
     for (uint8_t i = 0; i < count - 1; i++) {
         for (uint8_t j = i + 1; j < count; j++) {
-            if (antennae[i].type == antennae[j].type) {
-                total += placeAntinode(antennae[i], antennae[j], rows, columns);
-                total += placeAntinode(antennae[j], antennae[i], rows, columns);
+            if (antennas[i].type == antennas[j].type) {
+                total += placeAntinode(antennas[i], antennas[j], rows, columns);
+                total += placeAntinode(antennas[j], antennas[i], rows, columns);
             }
         }
     }
