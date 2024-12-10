@@ -20,7 +20,7 @@ int main(void) {
     ti_Close(slot);
 
     unsigned int chunks = 0;
-    struct chunk_t *memory = (struct chunk_t *)0x;
+    struct chunk_t *memory = (struct chunk_t *)gfx_vram;
 
     for (bool free = false; tok < endOfFile; tok++, free = !free) {
         memory[chunks].free = free;

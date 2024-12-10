@@ -3,60 +3,68 @@
 #include <graphx.h>
 #include <keypadc.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <debug.h>
 
-struct block_t {
-    bool free;
-    unsigned int id;
-};
+unsigned long fillSpace(unsigned long position, unsigned int *reverse) {
+    while (gfx_vram[*reverse] == '0') {
+        gfx_vram[*reverse - 1] = '0';
+        *reverse -= 2;
+    }
+
+    gfx_vram[*reverse] -= 1;
+
+    unsigned int checksum = position * ((*reverse + 1) / 2);
+    dbg_printf("%u | %u\n", ((*reverse + 1) / 2), *reverse);
+
+    return checksum;
+}
+
+bool allFree(unsigned int c, unsigned int blocks) {
+    for (; c < blocks; c++) {
+        if (gfx_vram[c] > '0') {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 int main(void) {
     gfx_Begin();
 
     uint8_t slot = ti_Open("Input", "r");
     char *tok = ti_GetDataPtr(slot);
-    char *endOfFile = tok + ti_GetSize(slot);
     ti_Close(slot);
 
-    unsigned int blocks = 0;
-    struct block_t *memory = (struct block_t *)gfx_vram;
-    uint8_t id = 0;
+    unsigned int blocks = strlen(tok);
+    gfx_ZeroScreen();
+    memcpy(gfx_vram, tok, blocks);
 
-    for (bool free = false; tok < endOfFile; tok++, free = !free) {
-        for (uint8_t i = 0; i < *tok - '0'; i++, blocks++) {
-            memory[blocks].free = free;
-            memory[blocks].id = id;
-        }
+    unsigned long long total = 0;
+    unsigned long position = 0;
+    unsigned int reverse = blocks - 1;
+    bool free = false;
 
-        id += !free;
-    }
-
-    unsigned int freeStart = 0;
-    int fileStart = blocks - 1;
-
-    for (; fileStart >= 0 && (int)freeStart < fileStart; fileStart--) {
-        if (memory[fileStart].free == false) {
-            for (unsigned int i = freeStart; (int)i < fileStart; i++) {
-                if (memory[i].free) {
-                    memory[i].free = false;
-                    memory[i].id = memory[fileStart].id;
-                    memory[fileStart].free = true;
-                    freeStart = i + 1;
-                    break;
-                }
+    for (unsigned int id = 0, c = 0; !(free && allFree(c + 1, blocks)); id += !free, free = !free, c++) {
+        dbg_printf("%u | %u | %u\n", gfx_vram[c] - '0', c, reverse);
+        for (; gfx_vram[c] - '0'; position++) {
+            if (free && !allFree(c + 1, blocks)) {
+                total += fillSpace(position, &reverse);
+            } else if (!free) {
+                // dbg_printf ("%u * %lu = %lu\n", id, position, id * position);
+                total += id * position;
             }
+
+            gfx_vram[c] -= 1;
         }
     }
 
-    unsigned int total = 0;
-
-    for (unsigned int i = 0; i < blocks && memory[i].free == false; i++) {
-        total += memory[i].id * i;
-        dbg_printf("%d * %d | %d\n", memory[i].id, i, total);
-    }
-
-    gfx_PrintUInt(total, 1);
+    dbg_printf("%llu\n", total);
     while (!kb_AnyKey());
     gfx_End();
+    while (kb_AnyKey());
+    printf("%llu\n", total);
+    while (!kb_AnyKey());
 }
