@@ -14,19 +14,14 @@ int main(void) {
     unsigned long long total = 0;
 
     while (tok < endOfFile) {
-        tok += 12;
-        long long AX = strtol(tok, &tok, 10);
-        tok += 4;
-        long long AY = strtol(tok, &tok, 10);
-        tok += 13;
-        long long BX = strtol(tok, &tok, 10);
-        tok += 4;
-        long long BY = strtol(tok, &tok, 10);
-
-        tok += 10;
-        long long X = strtol(tok, &tok, 10) + 10000000000000;
-        tok += 4;
-        long long Y = strtol(tok, &tok, 10) + 10000000000000;
+        long long AX = strtol(tok + 12, &tok, 10);
+        long long AY = strtol(tok + 4, &tok, 10);
+        long long BX = strtol(tok + 13, &tok, 10);
+        long long BY = strtol(tok + 4, &tok, 10);
+        long long X = strtol(tok + 10, &tok, 10);
+        long long Y = strtol(tok + 4, &tok, 10);
+        long long X = strtol(tok + 10, &tok, 10) + 10000000000000;
+        long long Y = strtol(tok + 4, &tok, 10) + 10000000000000;
 
         tok += 2;
 
